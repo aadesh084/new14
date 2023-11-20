@@ -1,0 +1,108 @@
+Aim : Database Trigger (All Types: Row level and Statement level triggers, Before and After
+Triggers).
+Write a database trigger on Library table. The System should keep track of the records that are being updated or deleted. The old value of updated or deleted records should be added in
+Library_Audit table.
+
+mysql> use STUDENT;
+Database changed
+mysql> create table library(BOOK_ID INT,BOOK_NAME VARCHAR(20),AUTHOR_NAME VARCHAR(20));
+Query OK, 0 rows affected (0.17 sec)
+
+mysql> create table library_audit(BOOK_ID INT,BOOK_NAME VARCHAR(20),AUTHOR_NAME VARCHAR(20));
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> insert into library values(1,'C','ASMITA'),(2,'PYTHON','AMRIN'),(3,'C++','PRASANA'),(4,'FDS','TUSHAR'),(5,'SE','VRUSHALI'),(6,'DM','JADHAV');
+Query OK, 6 rows affected (0.01 sec)
+Records: 6  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM library;
++---------+-----------+-------------+
+| BOOK_ID | BOOK_NAME | AUTHOR_NAME |
++---------+-----------+-------------+
+|       1 | C         | ASMITA      |
+|       2 | PYTHON    | AMRIN       |
+|       3 | C++       | PRASANA     |
+|       4 | FDS       | TUSHAR      |
+|       5 | SE        | VRUSHALI    |
+|       6 | DM        | JADHAV      |
++---------+-----------+-------------+
+6 rows in set (0.01 sec)
+
+1. TRIGGER FOR BEFORE UPDATE
+
+mysql> DELIMITER //
+mysql> CREATE TRIGGER T1
+    -> BEFORE UPDATE ON library
+FOR EACH ROW
+BEGIN
+INSERT INTO library_audit VALUES(old.BOOK_ID,old.BOOK_NAME,old.AUTHOR_NAME);
+END
+//
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> update library set AUTHOR_NAME='VAISHNAVI' where BOOK_ID=1;
+    -> //
+Query OK, 1 row affected (0.02 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> SELECT * FROM library ;
+    -> //
++---------+-----------+-------------+
+| BOOK_ID | BOOK_NAME | AUTHOR_NAME |
++---------+-----------+-------------+
+|       1 | C         | VAISHNAVI   |
+|       2 | PYTHON    | AMRIN       |
+|       3 | C++       | PRASANA     |
+|       4 | FDS       | TUSHAR      |
+|       5 | SE        | VRUSHALI    |
+|       6 | DM        | JADHAV      |
++---------+-----------+-------------+
+6 rows in set (0.00 sec)
+
+mysql> SELECT * FROM library_audit ;
+    -> //
++---------+-----------+-------------+
+| BOOK_ID | BOOK_NAME | AUTHOR_NAME |
++---------+-----------+-------------+
+|       1 | C         | ASMITA      |
++---------+-----------+-------------+
+1 row in set (0.00 sec)
+
+2. TRIGGER FOR BEFORE DELETE
+
+mysql> DELIMITER //
+mysql> CREATE TRIGGER T2
+    ->  BEFORE DELETE ON library
+FOR EACH ROW
+BEGIN
+INSERT INTO library_audit VALUES(old.BOOK_ID,old.BOOK_NAME,old.AUTHOR_NAME);
+END
+//
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> DELETE FROM library where BOOK_ID=2;
+    -> //
+Query OK, 1 row affected (0.01 sec)
+
+mysql> SELECT * FROM library;
+    -> //
++---------+-----------+-------------+
+| BOOK_ID | BOOK_NAME | AUTHOR_NAME |
++---------+-----------+-------------+
+|       1 | C         | VAISHNAVI   |
+|       3 | C++       | PRASANA     |
+|       4 | FDS       | TUSHAR      |
+|       5 | SE        | VRUSHALI    |
+|       6 | DM        | JADHAV      |
++---------+-----------+-------------+
+5 rows in set (0.00 sec)
+
+mysql> SELECT * FROM library_audit;
+    -> //
++---------+-----------+-------------+
+| BOOK_ID | BOOK_NAME | AUTHOR_NAME |
++---------+-----------+-------------+
+|       1 | C         | ASMITA      |
+|       2 | PYTHON    | AMRIN       |
++---------+-----------+-------------+
+2 rows in set (0.00 sec)

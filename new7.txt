@@ -1,0 +1,107 @@
+TITLE : Write a PL/SQL block of code using parameterized cursor that will merge  the data available in newly created table N_RollCall with the data available in the O_RollCall. If the data in the first table already exists in the second table then that data should be skipped.
+----------------------------------------------------------------------------------------------------------------------------------------
+mysql> create database A66;
+Query OK, 1 row affected (0.01 sec)	
+
+mysql> use A66;
+Database changed
+
+1.Create table O_RollCall:
+mysql> create table o_rollcall(roll_no int,name varchar(20),address varchar(20));
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> create table n_rollcall(roll_no int,name varchar(20),address varchar(20));
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> insert into o_rollcall values('1','Umesh','Latur'); 
+Query OK, 1 row affected (0.00 sec)
+
+mysql> insert into o_rollcall values('2','Ritesh','Jalgaon');
+Query OK, 1 row affected (0.01 sec)
+
+mysql> insert into o_rollcall values('3','Swapnil','Nashik');
+Query OK, 1 row affected (0.00 sec)
+
+mysql> insert into o_rollcall values('4','Vaibhav','Dhule');
+Query OK, 1 row affected (0.00 sec)
+
+mysql> insert into o_rollcall values('5','Abhi','Satara');
+Query OK, 1 row affected (0.00 sec)
+
+2.Create  Cursor for Merge the data:
+mysql> delimiter //
+mysql> create procedure p3(in r1 int)
+    -> begin
+    -> declare r2 int;
+    -> declare exit_loop boolean;
+    -> declare c1 cursor for select roll_no from o_rollcall where roll_no>r1;
+    -> declare continue handler for not found set exit_loop=true;
+    -> open c1;
+    -> e_loop:loop
+    -> fetch c1 into r2;
+    -> if not exists(select * from n_rollcall where roll_no=r2)
+    -> then
+    -> insert into n_rollcall select * from o_rollcall where roll_no=r2;
+    -> end if;
+    -> if exit_loop
+    -> then
+    -> close c1;
+    -> leave e_loop;
+    -> end if;
+    -> end loop e_loop;
+    -> end
+    -> //
+Query OK, 0 rows affected (0.01 sec)
+
+3. Call The Cursor:
+mysql> call p3(3);
+    -> //
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> select * from n_rollcall;
+    -> //
++---------+---------+---------+
+| roll_no | name    | address |
++---------+---------+---------+
+|       4 | Vaibhav | Dhule   |
+|       5 | Abhi    | Satara  |
++---------+---------+---------+
+
+mysql> call p3(0);
+    -> //
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> select * from n_rollcall;
+    -> //
++---------+---------+---------+
+| roll_no | name    | address |
++---------+---------+---------+
+|       4 | Vaibhav | Dhule   |
+|       5 | Abhi    | Satara  |
+|       1 | Umesh   | Latur   |
+|       2 | Ritesh  | Jalgaon |
+|       3 | Swapnil | Nashik  |
++---------+---------+---------+
+5 rows in set (0.00 sec)
+
+mysql> insert into o_rollcall values('6','Patil','Kolhapur');
+    -> //
+Query OK, 1 row affected (0.01 sec)
+
+mysql> call p3(4);
+    -> //
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> select * from n_rollcall;
+    -> //
++---------+---------+----------+
+| roll_no | name    | address  |
++---------+---------+----------+
+|       4 | Vaibhav | Dhule    |
+|       5 | Abhi    | Satara   |
+|       1 | Umesh   | Latur    |
+|       2 | Ritesh  | Jalgaon  |
+|       3 | Swapnil | Nashik   |
+|       6 | Patil   | Kolhapur |
++---------+---------+----------+
+6 rows in set (0.00 sec)

@@ -1,0 +1,188 @@
+Q5. Create following tables and solve following Queries
+Account(Acc_no, branch_name,balance)
+branch(branch_name,branch_city,assets)
+customer(cust_name,cust_street,cust_city)
+Depositor(cust_name,acc_no)
+Loan(loan_no,branch_name,amount)
+Borrower(cust_name,loan_no)
+i. Find all customers who have both account and loan at bank.
+ii. Find all customer who have account but no loan at the bank.
+iii. Find average account balance at Akurdi branch.
+iv. Find no. of depositors at each branch.
+v. Find the branches where average account balance > 12000.
+--------------------------------------------------------------------------------------------------------------
+
+mysql> create database n;
+Query OK, 1 row affected (0.08 sec)
+
+mysql> use n;
+Database changed
+mysql> CREATE TABLE Branch(Branch_name varchar(20) primary key,Branch_city varchar(20),Assets varchar(20));
+Query OK, 0 rows affected (0.06 sec)
+
+mysql> insert into Branch values('Pune','Nigdi','Bonds'),('Hadapsar','Katraj','Real Estate'),('Mumbai','Andheri','mortgages'),('Akrudi','Pimpari','Money');
+Query OK, 4 rows affected (0.03 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM Branch;
++-------------+-------------+-------------+
+| Branch_name | Branch_city | Assets      |
++-------------+-------------+-------------+
+| Akrudi      | Pimpari     | Money       |
+| Hadapsar    | Katraj      | Real Estate |
+| Mumbai      | Andheri     | mortgages   |
+| Pune        | Handewadi   | Bonds       |
++-------------+-------------+-------------+
+4 rows in set (0.00 sec)
+
+mysql> CREATE TABLE Account ( Acc_no INT PRIMARY KEY, Branch_name VARCHAR(50),Balance INT, FOREIGN KEY (Branch_name) REFERENCES Branch(Branch_name));
+Query OK, 0 rows affected (0.07 sec)
+
+mysql> SELECT * FROM Account;
+Empty set (0.00 sec)
+
+mysql> insert into Account values(123,'Pune',11200),(345,'Hadapsar',20000),(890,'Mumbai',25000),(567,'Akrudi',29500);
+Query OK, 4 rows affected (0.00 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM Account;
++--------+-------------+---------+
+| Acc_no | Branch_name | Balance |
++--------+-------------+---------+
+|    123 | Pune        |   11200 |
+|    345 | Hadapsar    |   20000 |
+|    567 | Akrudi      |   29500 |
+|    890 | Mumbai      |   25000 |
++--------+-------------+---------+
+4 rows in set (0.00 sec)
+
+mysql> CREATE TABLE Customer (Cust_name VARCHAR(50) PRIMARY KEY,Cust_street VARCHAR(50), Cust_city VARCHAR(50));
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> insert into Customer values('Umesh','FC Road','Pune'),('Anu','Route 66','Katraj'),('Swapnil','Hill Road','Andheri'),('Ritesh','Silverstone Road','Handewadi');
+Query OK, 4 rows affected (0.01 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM Customer;
++-----------+------------------+-----------+
+| Cust_name | Cust_street      | Cust_city |
++-----------+------------------+-----------+
+| Anu       | Route 66         | Katraj    |
+| Ritesh    | Silverstone Road | Handewadi |
+| Swapnil   | Hill Road        | Andheri   |
+| Umesh     | FC Road          | Pune      |
++-----------+------------------+-----------+
+4 rows in set (0.00 sec)
+
+mysql> create table Depositor ( Cust_name VARCHAR(50),Acc_no INT,foreign key (Cust_name) references Customer(Cust_name),foreign key (Acc_no) references Account(Acc_no));
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> insert into Depositor values('Ritesh',567),('Swapnil',890),('Umesh',123);
+Query OK, 3 rows affected (0.00 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM Depositor;
++-----------+--------+
+| Cust_name | Acc_no |
++-----------+--------+
+| Ritesh    |    567 |
+| Swapnil   |    890 |
+| Umesh     |    123 |
++-----------+--------+
+3 rows in set (0.00 sec)
+
+mysql> CREATE TABLE Loan (Loan_no INT PRIMARY KEY, Branch_name VARCHAR(50), Amount INT ,FOREIGN KEY (Branch_name) REFERENCES Branch(branch_name));
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> insert into Loan values(3,'Akrudi',560), (4,'Akrudi',4000), (5,'Akrudi',9000),(8,'Akrudi',1500);
+Query OK, 4 rows affected (0.00 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM Loan;
++---------+-------------+--------+
+| Loan_no | Branch_name | Amount |
++---------+-------------+--------+
+|       3 | Akrudi      |    560 |
+|       4 | Akrudi      |   4000 |
+|       5 | Akrudi      |   9000 |
+|       8 | Akrudi      |   1500 |
++---------+-------------+--------+
+4 rows in set (0.00 sec)
+
+mysql> CREATE TABLE Borrower (Cust_name VARCHAR(50), Loan_no INT, FOREIGN KEY (Cust_name) REFERENCES Customer(Cust_name),FOREIGN KEY (Loan_no) REFERENCES Loan(Loan_no));
+Query OK, 0 rows affected (0.04 sec)
+
+mysql> insert into Borrower values('Ritesh',5),('Umesh',8),('Anu',3);
+Query OK, 3 rows affected (0.01 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM Borrower;
++-----------+---------+
+| Cust_name | Loan_no |
++-----------+---------+
+| Ritesh    |       5 |
+| Umesh     |       8 |
+| Anu       |       3 |
++-----------+---------+
+3 rows in set (0.00 sec)
+-------------------------------------------------------------------------------------------------------------
+
+mysql> select distinct c.Cust_name from Customer c left join Depositor d on c.Cust_name = d.Cust_name left join Borrower b on c.Cust_name = b.Cust_name where d.Cust_name is not null or b.Cust_name is not null; 
++-----------+
+| Cust_name |
++-----------+
+| Anu       |
+| Ritesh    |
+| Swapnil   |
+| Umesh     |
++-----------+
+4 rows in set (0.01 sec)
+
+mysql> SELECT c.cust_name FROM Customer c JOIN Depositor d ON c.cust_name = d.cust_name LEFT JOIN Borrower b ON c.cust_name = b.cust_name WHERE b.loan_no IS NULL;
++-----------+
+| cust_name |
++-----------+
+| Swapnil   |
++-----------+
+1 row in set (0.01 sec)
+
+///////SELECT AVG(balance) AS avg_balance FROM Account WHERE branch_name = 'Akurdi';
+
+mysql> SELECT AVG(balance) AS average_balance FROM Account WHERE branch_name = 'Akurdi';
++-----------------+
+| average_balance |
++-----------------+
+|            NULL |
++-----------------+
+1 row in set (0.01 sec)
+
+
+
+mysql> select Branch_name ,avg(Balance) from Account WHERE branch_name = 'Akurdi';
++-------------+--------------+
+| Branch_name | avg(Balance) |
++-------------+--------------+
+| NULL        |         NULL |
++-------------+--------------+
+1 row in set (0.01 sec)
+
+mysql> Find no. of depositors at each branch  :
+mysql> select count(Cust_name) from Depositor;
++------------------+
+| count(Cust_name) |
++------------------+
+|                3 |
++------------------+
+1 row in set (0.00 sec)
+
+mysql> Find the branches where average account balance> 12000  :
+mysql> select Branch_name,avg(Balance) from Account group by Branch_name having avg(Balance)>12000;
++-------------+--------------+
+| Branch_name | avg(Balance) |
++-------------+--------------+
+| Akrudi      |   29500.0000 |
+| Hadapsar    |   20000.0000 |
+| Mumbai      |   25000.0000 |
++-------------+--------------+
+3 rows in set (0.01 sec)
+

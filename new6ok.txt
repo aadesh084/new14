@@ -1,0 +1,122 @@
+TITLE: Unnamed PL/SQL code block : Use of Control structure and Exception handling is mandatory.Write a PL/SQL block of code for the following requirements:-
+Schema:
+1) Borrower (Roll_no,Name,Date of Issue,Name of Book,Status) 
+2) Fine(Roll_no,Date,Amt) 
+•	Accept Roll_no AND Name of Book from user. 
+•	Check the no of days (from date of issue) 
+•	If days are between 15 to 30 then fine amount will be Rs 5per day 
+•	If no of days >30 ,per day fine will be Rs 50 per day and for days less than 30 ,Rs 5 per day 
+•	After submitting the book,status will change from I to R 
+•	If condition of finie is true,then details will be stored into fine table 
+•	Also handles the exception by named exception handler or user defined exception handler. 
+------------------------------------------------------------------------------------------------------------------------------------------
+Create Database A4 :
+
+mysql> create database A4;
+
+mysql> use A4;
+Database changed
+
+CREATE TABLE Borrower :
+mysql> CREATE TABLE Borrower (Roll_no INT ,Name VARCHAR (20)NOT NULL,Date_of_Issue DATE NOT NULL,Name_of_Book VARCHAR(20),Status VARCHAR(2));
+Query OK, 0 rows affected (0.05 sec)
+
+CREATE TABLE Fine :
+mysql> CREATE TABLE Fine(Roll_no INT,Date DATE,Amount INT); 
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> INSERT INTO Borrower VALUES(1,'Umesh','2023-02-23','OOP','I'),(2,'Anu','2023-03-25','SPM','I'),(3,'Swapnil','2023-04-10','CNS','I'),(4,'Ritesh','2023-04-15','DBMS','I'); 
+Query OK, 4 rows affected (0.02 sec)
+
+mysql> SELECT *FROM Borrower; 
++---------+---------+---------------+--------------+--------+
+| Roll_no | Name    | Date_of_Issue | Name_of_Book | Status |
++---------+---------+---------------+--------------+--------+
+|       1 | Umesh   | 2023-02-23    | OOP          | I      |
+|       2 | Anu     | 2023-03-25    | SPM          | I      |
+|       3 | Swapnil | 2023-04-10    | CNS          | I      |
+|       4 | Ritesh  | 2023-04-15    | DBMS         | I      |
++---------+---------+---------------+--------------+--------+
+
+
+create procedure :
+
+mysql> DELIMITER // 
+mysql> create procedure proc_libr(IN Roll_no INT, IN Book_name VARCHAR (20)) 
+
+BEGIN 
+DECLARE fine_amt INT; 
+declare days_late int; 
+declare date_issued DATE; 
+select Date_of_Issue INTO date_issued FROM Borrower 
+WHERE Roll_no=Roll_no AND Name_of_Book= Book_name; 
+set days_late = datediff (curdate(),date_issued); 
+if days_late Between 15 and 30 then 
+set fine_amt = days_late * 5; 
+elseif days_late > 30 then 
+set fine_amt = days_late * 50; 
+else 
+set fine_amt=0; 
+end if; 
+insert into Fine(Roll_no,Date,Amount) 
+values (Roll_no,curdate(),fine_amt); 
+update Borrower 
+set Status='R' 
+WHERE Roll_no=Roll_no AND Name_of_Book=Book_name; 
+end // 
+Query OK, 0 rows affected (0.02 sec)
+
+
+Call Procedure : 
+
+mysql> delimiter ; 
+call proc_libr (1,'OOP'); 
+
+Query OK, 1 row affected (0.02 sec)
+mysql> SELECT * FROM Fine; 
++---------+------------+--------+
+| Roll_no | Date       | Amount |
++---------+------------+--------+
+|       1 | 2023-11-20 |  13500 |
++---------+------------+--------+
+
+1 row in set (0.00 sec)
+
+
+mysql> SELECT * FROM Borrower; 
++---------+---------+---------------+--------------+--------+
+| Roll_no | Name    | Date_of_Issue | Name_of_Book | Status |
++---------+---------+---------------+--------------+--------+
+|       1 | Umesh   | 2023-02-23    | OOP          | R      |
+|       2 | Anu     | 2023-03-25    | SPM          | I      |
+|       3 | Swapnil | 2023-04-10    | CNS          | I      |
+|       4 | Ritesh  | 2023-04-15    | DBMS         | I      |
++---------+---------+---------------+--------------+--------+
+
+
+
+mysql> delimiter ; 
+mysql> call proc_libr (3,'CNS'); 
+
+Show Borrower Fine :
+mysql> SELECT * FROM Fine; 
++---------+------------+--------+
+| Roll_no | Date       | Amount |
++---------+------------+--------+
+|       1 | 2023-11-20 |  13500 |
+|       3 | 2023-11-20 |  11200 |
++---------+------------+--------+
+
+2 rows in set (0.00 sec)
+
+Show Borrower Table :
+SELECT * FROM Borrower; 
++---------+---------+---------------+--------------+--------+
+| Roll_no | Name    | Date_of_Issue | Name_of_Book | Status |
++---------+---------+---------------+--------------+--------+
+|       1 | Umesh   | 2023-02-23    | OOP          | R      |
+|       2 | Anu     | 2023-03-25    | SPM          | I      |
+|       3 | Swapnil | 2023-04-10    | CNS          | R      |
+|       4 | Ritesh  | 2023-04-15    | DBMS         | I      |
++---------+---------+---------------+--------------+--------+
+

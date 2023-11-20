@@ -1,0 +1,90 @@
+Q 1. Create following Tables and ExecuteQueries Customer(cust_no,fname,lname) Cust_Acc_FD_Details(custno,acc_fd_no)
+fd_details(acc_fd_no,amt) address_details(code_no,add1,add2,state,city,pincode)
+Employee(emp_no,f_name,l_name,m_name,dept,code_no) Contact_details(code_no,cntc_type,cntc_data)
+i.	Retrieve the address of customer Fname as 'xyz' and Lname as 'pqr' ii. List the customer holding fixed deposit of amount more than 5000 iii. List the employee details along with contact details using left outer join & right join.
+mysql> create database a1;
+Query OK, 1 row affected (0.02 sec)
+
+mysql> use a1
+Database changed
+mysql> CREATE TABLE Customer (cust_no INT PRIMARY KEY, fname VARCHAR(255), lname VARCHAR(255));
+Query OK, 0 rows affected (0.10 sec)
+
+mysql> CREATE TABLE Cust_Acc_FD_Details (custno INT, acc_fd_no INT PRIMARY KEY, FOREIGN KEY (custno) REFERENCES Customer(cust_no));
+Query OK, 0 rows affected (0.07 sec)
+
+mysql> CREATE TABLE fd_details (acc_fd_no INT PRIMARY KEY, amt DECIMAL(10, 2));
+Query OK, 0 rows affected (0.06 sec)
+
+mysql> CREATE TABLE address_details (code_no INT PRIMARY KEY, add1 VARCHAR(255), add2 VARCHAR(255), state VARCHAR(255), city VARCHAR(255), pincode VARCHAR(10)); 
+Query OK, 0 rows affected (0.05 sec)
+
+mysql> CREATE TABLE Employee (emp_no INT PRIMARY KEY, f_name VARCHAR(255), l_name VARCHAR(255), m_name VARCHAR(255), dept VARCHAR(255), code_no INT, FOREIGN KEY (code_no) REFERENCES address_details(code_no));
+Query OK, 0 rows affected (0.06 sec)
+
+mysql> CREATE TABLE Contact_details (code_no INT PRIMARY KEY, cntc_type VARCHAR(255), cntc_data VARCHAR(255), FOREIGN KEY (code_no) REFERENCES address_details(code_no));
+Query OK, 0 rows affected (0.05 sec)
+
+mysql> INSERT INTO Customer (cust_no, fname, lname) VALUES (1, 'yash', 'chavan'), (2, 'tom ', 'bardade'), (3, 'nikhil', 'ekbote');
+Query OK, 3 rows affected (0.01 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO Cust_Acc_FD_Details (custno, acc_fd_no) VALUES (1, 101), (2, 102), (3, 103);
+Query OK, 3 rows affected (0.02 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO fd_details (acc_fd_no, amt) VALUES (101, 5000.00), (102, 7500.00), (103, 10000.00);
+Query OK, 3 rows affected (0.02 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO address_details (code_no, add1, add2, state, city, pincode) VALUES (1, '123 Main St', 'Apt 4', 'California', 'Los Angeles', '90001'), (2, '456 Oak St', 'Unit 8', 'New York', 'New York City', '10001'), (3, '789 Pine St', 'Suite 12', 'Texas', 'Houston', '77001');
+Query OK, 3 rows affected (0.02 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO Employee (emp_no, f_name, l_name, m_name, dept, code_no) VALUES (101, 'Mark', 'Johnson', 'A', 'HR', 1), (102, 'Emily', 'Williams', 'B', 'IT', 2), (103, 'Michael', 'Smith', 'C', 'Finance', 3);
+Query OK, 3 rows affected (0.01 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO Contact_details (code_no, cntc_type, cntc_data) VALUES (1, 'Email', 'john.doe@email.com'), (2, 'Phone', '555-1234'), (3, 'Email', 'alice.johnson@email.com');
+Query OK, 3 rows affected (0.01 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql> SELECT ad.* FROM Customer c JOIN address_details ad ON c.cust_no = ad.code_no WHERE c.fname = 'yash' AND c.lname = 'chavan';
++---------+-------------+-------+------------+-------------+---------+
+| code_no | add1        | add2  | state      | city        | pincode |
++---------+-------------+-------+------------+-------------+---------+
+|       1 | 123 Main St | Apt 4 | California | Los Angeles | 90001   |
++---------+-------------+-------+------------+-------------+---------+
+1 row in set (0.04 sec)
+
+mysql> SELECT c.* FROM Customer c JOIN Cust_Acc_FD_Details cad ON c.cust_no = cad.custno JOIN fd_details fd ON cad.acc_fd_no = fd.acc_fd_no WHERE fd.amt > 5000; 
++---------+--------+---------+
+| cust_no | fname  | lname   |
++---------+--------+---------+
+|       2 | tom    | bardade |
+|       3 | nikhil | ekbote  |
++---------+--------+---------+
+2 rows in set (0.01 sec)
+
+mysql> SELECT e.*, cd.* FROM Contact_details cd RIGHT JOIN Employee e ON e.code_no = cd.code_no;
++--------+---------+----------+--------+---------+---------+---------+-----------+-------------------------+
+| emp_no | f_name  | l_name   | m_name | dept    | code_no | code_no | cntc_type | cntc_data               |
++--------+---------+----------+--------+---------+---------+---------+-----------+-------------------------+
+|    101 | Mark    | Johnson  | A      | HR      |       1 |       1 | Email     | john.doe@email.com      |
+|    102 | Emily   | Williams | B      | IT      |       2 |       2 | Phone     | 555-1234                |
+|    103 | Michael | Smith    | C      | Finance |       3 |       3 | Email     | alice.johnson@email.com |
++--------+---------+----------+--------+---------+---------+---------+-----------+-------------------------+
+3 rows in set (0.00 sec)
+
+mysql> SELECT e.*, cd.* FROM Contact_details cd LEFT JOIN Employee e ON e.code_n
+o = cd.code_no;
++--------+---------+----------+--------+---------+---------+---------+-----------+-------------------------+
+| emp_no | f_name  | l_name   | m_name | dept    | code_no | code_no | cntc_type | cntc_data               |
++--------+---------+----------+--------+---------+---------+---------+-----------+-------------------------+
+|    101 | Mark    | Johnson  | A      | HR      |       1 |       1 | Email     | john.doe@email.com      |
+|    102 | Emily   | Williams | B      | IT      |       2 |       2 | Phone     | 555-1234                |
+|    103 | Michael | Smith    | C      | Finance |       3 |       3 | Email     | alice.johnson@email.com |
++--------+---------+----------+--------+---------+---------+---------+-----------+-------------------------+
+3 rows in set (0.00 sec)
+
+

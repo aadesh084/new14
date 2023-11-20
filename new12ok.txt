@@ -1,0 +1,34 @@
+Q.12 Implement Map-Reduce Operation consider your own collection.
+// Insert sample data into the Sales collection
+db.Sales.insertMany([
+  { product: "A", amount: 100, quantity: 2, date: ISODate("2023-01-01") },
+  { product: "B", amount: 150, quantity: 1, date: ISODate("2023-01-01") },
+  { product: "A", amount: 200, quantity: 3, date: ISODate("2023-01-02") },
+  { product: "B", amount: 120, quantity: 2, date: ISODate("2023-01-02") },
+  // Add more sample data as needed
+]);
+
+// Map function
+var mapFunction = function() {
+  emit(this.product, { amount: this.amount, quantity: this.quantity });
+};
+
+// Reduce function
+var reduceFunction = function(key, values) {
+  var result = { total_amount: 0, total_quantity: 0 };
+  values.forEach(function(value) {
+    result.total_amount += value.amount;
+    result.total_quantity += value.quantity;
+  });
+  return result;
+};
+
+// Execute Map-Reduce operation
+var result = db.Sales.mapReduce(
+  mapFunction,
+  reduceFunction,
+  { out: "SalesSummary" }
+);
+
+// Display the result collection
+db[result.result].find();

@@ -1,0 +1,63 @@
+// Creating Student_Data collection and inserting documents
+db.createCollection("Student_Data")
+
+db.Student_Data.insertMany([
+  {
+    RollNo: 1,
+    Name: "John Doe",
+    Class: "12A",
+    dept: "Physics",
+    college_name: "XYZ College",
+    Marks_in_percentage: 85,
+    mobile: "1234567890",
+    email_id: "john.doe@example.com"
+  },
+  {
+    RollNo: 2,
+    Name: "Jane Smith",
+    Class: "11B",
+    dept: "Chemistry",
+    college_name: "XYZ College",
+    Marks_in_percentage: 92,
+    mobile: "9876543210",
+    email_id: "jane.smith@example.com"
+  },
+  // Add more documents as needed
+]);
+
+// Aggregation Operations using $group
+db.Student_Data.aggregate([
+  // i. Department wise Max Marks student
+  {
+    $group: {
+      _id: "$dept",
+      maxMarks: { $max: "$Marks_in_percentage" },
+      maxStudent: { $first: "$$ROOT" }
+    }
+  },
+
+  // ii. Department wise Min Marks student
+  {
+    $group: {
+      _id: "$_id",
+      minMarks: { $min: "$maxMarks" },
+      minStudent: { $first: "$maxStudent" }
+    }
+  },
+
+  // iii. Department wise Sum of Marks
+  {
+    $group: {
+      _id: "$_id",
+      sumMarks: { $sum: "$minMarks" }
+    }
+  },
+
+  // iv. Department wise AVG Marks of student
+  {
+    $group: {
+      _id: "$_id",
+      avgMarks: { $avg: "$sumMarks" }
+    }
+  }
+]);

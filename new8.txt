@@ -1,0 +1,86 @@
+TITLE:  Write a Stored Procedure namely Proc_grade for the Categorization of student,If marks scored by student in examination is <=1500 and marks>=990 then student will be placed in distinction category if marks are between 989 and 900 category id first class ,if marks 899 and 825 category is Higher Second Class. 
+Write a PL/SQL to use procedure created with above requirement. 
+Stud_Marks(name,total_marks) Result (Roll,Name,Class) 
+------------------------------------------------------------------------------------------------------------------------------------------
+Create Database A5 :
+mysql> create database A5;
+Query OK, 1 row affected (0.01 sec)
+mysql> use A5;
+Database changed
+
+1.Create table Student Marks -
+mysql> CREATE TABLE Stud_Marks(Name VARCHAR(20),Total_marks INT); 
+Query OK, 0 rows affected (0.04 sec)
+
+2.Create Result -
+mysql> CREATE TABLE Result (Roll_no INT,Name VARCHAR(20),Class VARCHAR(25)); 
+Query OK, 0 rows affected (0.03 sec)
+
+3.Create Procedure - 
+mysql> DELIMITER //
+mysql> CREATE PROCEDURE Pro_Grade (IN RollNo INT , IN Name VARCHAR(20),IN Marks INT)
+    -> BEGIN 
+DECLARE Class VARCHAR (20); 
+IF Marks >=990 AND Marks <=1500 THEN SET Class='Distinction'; 
+ELSEIF Marks <=989 AND Marks >=900 THEN SET Class='First Class'; 
+ELSEIF Marks <=899 AND Marks >=825 THEN SET Class='Second Class'; 
+ELSEIF Marks <=824 AND Marks >=700 THEN SET Class=' Pass'; 
+ELSE SET Class='Fail'; 
+END IF; 
+INSERT INTO Stud_Marks VALUES (Name,Marks); 
+INSERT INTO Result VALUES (RollNo,Name,Class); 
+END //
+Query OK, 0 rows affected (0.01 sec)
+
+4.Calling the Procedure :
+
+mysql> DELIMITER // 
+mysql> Call Pro_Grade(1,'Umesh',999); 
+    -> //
+Query OK, 1 row affected (0.05 sec)
+
+mysql> DELIMITER //
+mysql> Call Pro_Grade(1,'Swapnil',930);
+    -> //
+Query OK, 1 row affected (0.00 sec)
+
+mysql> DELIMITER //
+mysql> Call Pro_Grade(1,'Ritesh',900);
+    -> //
+Query OK, 1 row affected (0.00 sec)
+
+mysql> DELIMITER //
+mysql> Call Pro_Grade(1,'Adesh',850);
+    -> //
+Query OK, 1 row affected (0.01 sec)
+
+mysql> DELIMITER //
+mysql> Call Pro_Grade(1,'Anurag',650);
+    -> //
+Query OK, 1 row affected (0.01 sec)
+
+mysql> SELECT *FROM Stud_Marks; 
+    -> //
++---------+-------------+
+| Name    | Total_marks |
++---------+-------------+
+| Umesh   |         999 |
+| Swapnil |         930 |
+| Ritesh  |         900 |
+| Adesh   |         850 |
+| Anurag  |         650 |
++---------+-------------+
+5 rows in set (0.01 sec)
+
+mysql> SELECT *FROM Result; 
+    -> //
++---------+---------+--------------+
+| Roll_no | Name    | Class        |
++---------+---------+--------------+
+|       1 | Umesh   | Distinction  |
+|       1 | Swapnil | First Class  |
+|       1 | Ritesh  | First Class  |
+|       1 | Adesh   | Second Class |
+|       1 | Anurag  | Fail         |
++---------+---------+--------------+
+5 rows in set (0.00 sec)

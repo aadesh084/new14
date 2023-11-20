@@ -1,0 +1,205 @@
+13 Create Collection Employee with following documents /attributes (emp_id, emp_name, emp_salary,
+emp_designation, emp_Bdate, emp_mobileno ,emp_dept)
+Operations.
+i. Insert at least 10 documents
+ii. Display total salary of department wise
+iii. Update the emp designation from “Junior Developer” to “Senior Developer”
+iv. Delete the emp with age greater than 60
+v. Display the emp names and salary department wise.
+--------------------------------------------------------------------------------------------------------------------------
+
+//
+test> db.createCollection("Employee");
+{ ok: 1 }
+
+test> //insert
+
+test> db.Employee.insertMany([
+  {
+     emp_id: 1,
+    emp_name: "Ram",
+     emp_salary: 60080,
+     emp_designation: "Junior Developer",
+    emp_Bdate: ISODate("1990-05-15"),
+    emp_mobileno: "1237777890",
+     emp_dept: "IT"
+   },
+
+   {
+     emp_id: 2,
+     emp_name: "Shyam",
+     emp_salary: 75000,
+     emp_designation: "Senior Developer",
+     emp_Bdate: ISODate("1985-08-22"),
+     emp_mobileno: "9879993210",
+     emp_dept: "HR"
+   },
+  {
+     emp_id: 3,
+     emp_name: "pratik",
+     emp_salary: 20000,
+     emp_designation: "Junior Developer",
+     emp_Bdate: ISODate("1999-05-15"),
+     emp_mobileno: "1237896890",
+     emp_dept: "IT"
+  },
+ 
+   {
+     emp_id: 4,
+     emp_name: "Satu",
+     emp_salary: 79000,
+     emp_designation: "Senior Developer",
+     emp_Bdate: ISODate("1975-08-22"),
+     emp_mobileno: "9874123210",
+     emp_dept: "HR"
+   },
+  {
+     emp_id: 5,
+     emp_name: "Adi",
+     emp_salary: 30000,
+     emp_designation: "Junior Developer",
+     emp_Bdate: ISODate("1998-05-15"),
+     emp_mobileno: "1237447890",
+     emp_dept: "IT"
+   },
+ 
+   {
+     emp_id: 6,
+     emp_name: "Shub",
+     emp_salary: 95000,
+     emp_designation: "Senior Developer",
+     emp_Bdate: ISODate("1975-08-22"),
+     emp_mobileno: "9874543210",
+     emp_dept: "IT"
+   },
+ {
+     emp_id: 7,
+     emp_name: "Anurag",
+     emp_salary: 60000,
+     emp_designation: "Junior Developer",
+     emp_Bdate: ISODate("2000-05-15"),
+     emp_mobileno: "1230007890",
+     emp_dept: "IT"
+   },
+ 
+   {
+     emp_id: 8,
+     emp_name: "Shiv",
+     emp_salary: 75000,
+     emp_designation: "Senior Developer",
+     emp_Bdate: ISODate("1981-08-22"),
+     emp_mobileno: "9871113210",
+     emp_dept: "IT"
+   },{
+     emp_id: 9,
+     emp_name: "Umesh",
+     emp_salary: 12000,
+     emp_designation: "Junior Developer",
+     emp_Bdate: ISODate("2003-05-15"),
+     emp_mobileno: "1230027890",
+     emp_dept: "IT"
+   },
+ 
+   {
+     emp_id: 10,
+     emp_name: "Shiv",
+     emp_salary: 75800,
+     emp_designation: "Senior Developer",
+     emp_Bdate: ISODate("1987-08-22"),
+     emp_mobileno: "9871253210",
+     emp_dept: "IT"
+   }
+  ]);
+{
+  acknowledged: true,
+  insertedIds: {
+    '0': ObjectId("655b8b64cb76d53587fcb1cb"),
+    '1': ObjectId("655b8b64cb76d53587fcb1cc"),
+    '2': ObjectId("655b8b64cb76d53587fcb1cd"),
+    '3': ObjectId("655b8b64cb76d53587fcb1ce"),
+    '4': ObjectId("655b8b64cb76d53587fcb1cf"),
+    '5': ObjectId("655b8b64cb76d53587fcb1d0"),
+    '6': ObjectId("655b8b64cb76d53587fcb1d1"),
+    '7': ObjectId("655b8b64cb76d53587fcb1d2"),
+    '8': ObjectId("655b8b64cb76d53587fcb1d3"),
+    '9': ObjectId("655b8b64cb76d53587fcb1d4")
+  }
+}
+test> // Step 2: Display total salary of department wise
+
+test> var departmentWiseSalary = db.Employee.aggregate([
+   {
+     $group: {
+       _id: "$emp_dept",
+       totalSalary: { $sum: "$emp_salary" }
+     }
+   }
+ ]);
+
+test> 
+
+test> print("Total Salary Department Wise:");
+Total Salary Department Wise:
+
+test> departmentWiseSalary.forEach(function (result) {
+   print(result._id + ": " + result.totalSalary);
+ });
+IT: 427880
+HR: 154000
+
+test> // Step 3: Update the emp designation from "Junior Developer" to "Senior Developer"
+test> db.Employee.updateMany(
+   { emp_designation: "Junior Developer" },
+   { $set: { emp_designation: "Senior Developer" } }
+);
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 5,
+  modifiedCount: 5,
+  upsertedCount: 0
+}
+
+test> // Step 4: Delete the emp with age greater than 60
+test> // Assuming emp_Bdate is the birthdate attribute
+test> var currentDate = new Date();
+test> var sixtyYearsAgo = new Date(currentDate.getFullYear() - 60, currentDate.getMonth(), currentDate.getDate());
+
+test> db.Employee.deleteMany({ emp_Bdate: { $lt: sixtyYearsAgo } });
+{ acknowledged: true, deletedCount: 0 }
+
+
+test> // Step 5: Display the emp names and salary department wise
+test> var empNamesAndSalary = db.Employee.aggregate([
+    {
+    $group: {_id: { emp_dept: "$emp_dept", emp_name: "$emp_name" }, emp_salary: { $first: "$emp_salary" }
+     }
+   },
+   {
+    $project: {
+      _id: 0,
+      emp_dept: "$_id.emp_dept",
+      emp_name: "$_id.emp_name",
+     emp_salary: 1
+     }
+  }
+ ]);
+
+test> print("Employee Names and Salary Department Wise:");
+Employee Names and Salary Department Wise:
+
+test> empNamesAndSalary.forEach(function (result) {
+...   print(result.emp_dept + " - " + result.emp_name + ": " + result.emp_salary);
+... });
+IT - pratik: 20000
+IT - Adi: 30000
+IT - Shiv: 75000
+HR - Satu: 79000
+IT - Ram: 60080
+HR - Shyam: 75000
+IT - Shub: 95000
+IT - Umesh: 12000
+IT - Anurag: 60000
+
+
+

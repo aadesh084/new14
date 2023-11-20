@@ -1,0 +1,110 @@
+11 Design and Develop MongoDB Queries using CRUD operations. (Use CRUD operations, SAVE method,
+logical operators)
+Create following documents in MongoDB with attributes
+Student_Data (RollNo, Name, Class, dept, college_name, Marks_in_percentage, mobile, emaili_d ,
+sport_status(Y/N))
+i. Create/insert 10 docs
+ii. Update the mobile no of particular student
+iii. Update the class of TE students to BE
+iv. Delete the students whose percentage is less than 40
+v. Display department wise first three toppers.
+vi. Display the student’s name those are in First class and participated in sports activity.
+vii. Display the student’s name those are in First class OR participated in sports activity.
+
+---------------------------------------------------------------------------------------------------------------------------------
+//1
+
+db.createCollection("Student_Data")
+
+test> db.Student_Data.insertMany([
+ { "RollNo": 1, "Name": "sid", "Class": "TE", "dept": "Computer Science", "college_name": "XYZ College", "Marks_in_percentage": 75, "mobile": "1234567890", "email_id": "sid@gmail.com", "sport_status": "Y" },
+ { "RollNo": 2, "Name": "Umesh", "Class": "TE", "dept": "Computer Science", "college_name": "XYZ College", "Marks_in_percentage": 78, "mobile": "1234887890", "email_id": "um@gmail.com ", "sport_status": "Y" },
+{ "RollNo": 3, "Name": "Ramesh", "Class": "TE", "dept": "Computer Science", "college_name": "XYZ College", "Marks_in_percentage": 79, "mobile": "1234787890", "email_id": "ram@example.com", "sport_status": "N" },
+{ "RollNo": 4, "Name": "Ganesh", "Class": "BE", "dept": "Computer Science", "college_name": "XYZ College", "Marks_in_percentage": 75, "mobile": "1234447890", "email_id": "gn@gmail.com", "sport_status": "Y" },
+{ "RollNo": 5, "Name": "om", "Class": "TE", "dept": "Computer Science", "college_name": "XYZ College", "Marks_in_percentage": 78, "mobile": "1874567890", "email_id": "om@gmail.com ", "sport_status": "Y" },
+{ "RollNo": 6, "Name": "Ramu", "Class": "TE", "dept": "Computer Science", "college_name": "XYZ College", "Marks_in_percentage": 19, "mobile": "1234555890", "email_id": "ramu@example.com", "sport_status": "N" },
+{ "RollNo": 7, "Name": "satu", "Class": "TE", "dept": "Computer Science", "college_name": "XYZ College", "Marks_in_percentage": 75, "mobile": "127777890", "email_id": "sat@example.com", "sport_status": "Y" },
+]);
+
+{
+  acknowledged: true,
+  insertedIds: {
+    '0': ObjectId("655b842a4c28e333f1e956ef"),
+    '1': ObjectId("655b842a4c28e333f1e956f0"),
+    '2': ObjectId("655b842a4c28e333f1e956f1"),
+    '3': ObjectId("655b842a4c28e333f1e956f2"),
+    '4': ObjectId("655b842a4c28e333f1e956f3"),
+    '5': ObjectId("655b842a4c28e333f1e956f4"),
+    '6': ObjectId("655b842a4c28e333f1e956f5")
+  }
+}
+
+//2
+test> db.Student_Data.updateOne(
+...     { "RollNo": 1 },
+...     { $set: { "mobile": "9876543210" } }
+... );
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 1,
+  modifiedCount: 1,
+  upsertedCount: 0
+}
+
+//3
+test> db.Student_Data.updateMany(
+...     { "Class": "TE" },
+...     { $set: { "Class": "BE" } }
+... );
+{
+  acknowledged: true,
+  insertedId: null,
+  matchedCount: 7,
+  modifiedCount: 7,
+  upsertedCount: 0
+}
+test> //less than 4o
+
+test> db.Student_Data.deleteMany(
+...     { "Marks_in_percentage": { $lt: 40 } }
+... );
+{ acknowledged: true, deletedCount: 1 }
+test> 5
+5
+test> //5
+
+test> db.Student_Data.aggregate([
+...     { $sort: { "Marks_in_percentage": -1 } },
+...     { $group: { "_id": "$dept", "toppers": { $push: "$Name" } } },
+...     { $project: { "_id": 0, "Department": "$_id", "TopThree": { $slice: ["$toppers", 3] } } }
+... ]);
+[
+  { Department: 'ENTC', TopThree: [ 'Sid' ] },
+  {
+    Department: 'Computer Science',
+    TopThree: [ 'Ramesh', 'Umesh', 'om' ]
+  },
+  { Department: 'CSE', TopThree: [ 'Umesh' ] }
+]
+test> //6
+
+test> db.Student_Data.find(
+...     { "Class": "First", "sport_status": "Y" },
+...     { "_id": 0, "Name": 1 }
+... );
+
+test> //7
+
+test> db.Student_Data.find(
+...     { $or: [ { "Class": "First" }, { "sport_status": "Y" } ] },
+...     { "_id": 0, "Name": 1 }
+... );
+[
+  { Name: 'sid' },
+  { Name: 'Umesh' },
+  { Name: 'Ganesh' },
+  { Name: 'om' },
+  { Name: 'satu' }
+]
+test> 
